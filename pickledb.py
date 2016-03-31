@@ -1,6 +1,7 @@
 #!/usr/bin/env python
+# -*- coding: utf8 -*-
 
-# Copyright (c) 2015, Harrison Erd
+# Copyright (c) 2011, Harrison Erd
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -27,11 +28,20 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import simplejson
+import json
+import io
+
+"""
+This version of pickleDB is has not been tested. It should only be used for
+testing or development. It was made to work with Python 3.x. There have been
+some issues with Python 2.x. python3pickledb.py written by olivierlemoal.
+Please report issues to bitbucket (patx/pickledb).
+"""
 
 def load(location, option):
     '''Return a pickledb object. location is the path to the json file.'''
     return pickledb(location, option)
+
 
 class pickledb(object):
 
@@ -41,7 +51,8 @@ class pickledb(object):
         self.load(location, option)
 
     def load(self, location, option):
-        '''Loads, reloads or changes the path to the db file.'''
+        '''Loads, reloads or changes the path to the db file.
+        DO NOT USE this method has it may be deprecated in the future.'''
         location = os.path.expanduser(location)
         self.loco = location
         self.fsave = option
@@ -164,7 +175,7 @@ class pickledb(object):
         return True
 
     def dpop(self, name, key):
-        '''Remove one key-value pair in a dict'''
+        '''Remove one key-value in a dict'''
         value = self.db[name][key]
         del self.db[name][key]
         self._dumpdb(self.fsave)
@@ -187,15 +198,16 @@ class pickledb(object):
 
     def deldb(self):
         '''Delete everything from the database'''
-        self.db= {}
+        self.db = {}
         self._dumpdb(self.fsave)
         return True
 
     def _loaddb(self):
         '''Load or reload the json info from the file'''
-        self.db = simplejson.load(open(self.loco, 'rt'))
+        self.db = json.load(io.open(self.loco, 'r', encoding='utf-8'))
 
     def _dumpdb(self, forced):
-        '''Write/save the json dump into the file'''
+        '''Dump (write, save) the json dump into the file'''
         if forced:
-           simplejson.dump(self.db, open(self.loco, 'wt'))
+            f = io.open(self.loco, 'w', encoding='utf-8')
+            f.write(json.dumps(self.db, ensure_ascii=False))
